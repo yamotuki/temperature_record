@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // 体温記録を追加
   Future<void> _addRecord(TemperatureRecord record) async {
     try {
       await _storageService.saveRecord(record);
@@ -66,6 +67,28 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // 体温記録を削除
+  Future<void> _deleteRecord(TemperatureRecord record) async {
+    try {
+      await _storageService.deleteRecord(record);
+      await _loadRecords();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('記録を削除しました'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('記録の削除に失敗しました: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,7 +104,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 16),
                 // 体温記録の表示
                 Expanded(
-                  child: TemperatureShow(records: _records),
+                  child: TemperatureShow(
+                    records: _records,
+                    onDelete: _deleteRecord,
+                  ),
                 ),
               ],
             ),

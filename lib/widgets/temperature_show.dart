@@ -4,8 +4,13 @@ import '../models/temperature_record.dart';
 
 class TemperatureShow extends StatelessWidget {
   final List<TemperatureRecord> records;
+  final Function(TemperatureRecord) onDelete;
 
-  const TemperatureShow({super.key, required this.records});
+  const TemperatureShow({
+    super.key, 
+    required this.records,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +92,35 @@ class TemperatureShow extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                      ),
+                      // 削除ボタン
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.red),
+                        onPressed: () {
+                          // 削除確認ダイアログを表示
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('削除の確認'),
+                                content: Text('${formattedDate} ${record.temperature.toStringAsFixed(1)}℃ の記録を削除しますか？'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () => Navigator.of(context).pop(),
+                                    child: const Text('キャンセル'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      onDelete(record);
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text('削除'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                       ),
                     ],
                   ),
