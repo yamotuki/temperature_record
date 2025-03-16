@@ -19,7 +19,6 @@ class TemperatureShow extends StatelessWidget {
         child: Text('記録がありません'),
       );
     }
-
     // 記録を日付の降順（新しい順）にソート
     final sortedRecords = List<TemperatureRecord>.from(records)
       ..sort((a, b) => b.dateTime.compareTo(a.dateTime));

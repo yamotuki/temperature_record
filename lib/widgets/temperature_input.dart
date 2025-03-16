@@ -18,6 +18,7 @@ class _TemperatureInputState extends State<TemperatureInput> {
   final _temperatureController = TextEditingController(text: '36.8');
   DateTime _selectedDateTime = DateTime.now();
   int _selectedHour = DateTime.now().hour;
+  int _selectedMinute = DateTime.now().minute;
 
   @override
   void dispose() {
@@ -39,7 +40,7 @@ class _TemperatureInputState extends State<TemperatureInput> {
           picked.month,
           picked.day,
           _selectedHour,
-          0,
+          _selectedMinute,
         );
       });
     }
@@ -53,7 +54,20 @@ class _TemperatureInputState extends State<TemperatureInput> {
         _selectedDateTime.month,
         _selectedDateTime.day,
         hour,
-        0,
+        _selectedMinute,
+      );
+    });
+  }
+
+  void _updateMinute(int minute) {
+    setState(() {
+      _selectedMinute = minute;
+      _selectedDateTime = DateTime(
+        _selectedDateTime.year,
+        _selectedDateTime.month,
+        _selectedDateTime.day,
+        _selectedHour,
+        minute,
       );
     });
   }
@@ -74,9 +88,11 @@ class _TemperatureInputState extends State<TemperatureInput> {
 
     // 入力をリセット
     _temperatureController.text = '36.8';
+    final now = DateTime.now();
     setState(() {
-      _selectedDateTime = DateTime.now();
-      _selectedHour = DateTime.now().hour;
+      _selectedDateTime = now;
+      _selectedHour = now.hour;
+      _selectedMinute = now.minute;
     });
   }
 
@@ -132,7 +148,7 @@ class _TemperatureInputState extends State<TemperatureInput> {
                       const SizedBox(width: 8),
                       DropdownButton<int>(
                         value: _selectedHour,
-                        items: List.generate(24, (index) => index + 1)
+                        items: List.generate(24, (index) => index)
                             .map((hour) => DropdownMenuItem<int>(
                                   value: hour,
                                   child: Text('$hour時'),
@@ -141,6 +157,22 @@ class _TemperatureInputState extends State<TemperatureInput> {
                         onChanged: (value) {
                           if (value != null) {
                             _updateHour(value);
+                          }
+                        },
+                        underline: Container(),
+                      ),
+                      const SizedBox(width: 8),
+                      DropdownButton<int>(
+                        value: _selectedMinute,
+                        items: List.generate(60, (index) => index)
+                            .map((minute) => DropdownMenuItem<int>(
+                                  value: minute,
+                                  child: Text('$minute分'),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            _updateMinute(value);
                           }
                         },
                         underline: Container(),
