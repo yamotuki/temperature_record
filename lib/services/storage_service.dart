@@ -5,8 +5,8 @@ import '../models/temperature_record.dart';
 class StorageService {
   static const String _recordsKey = 'temperature_records';
 
-  // 全ての体温記録を取得
-  Future<List<TemperatureRecord>> getRecords() async {
+  /// 全ての体温記録を取得
+  Future<List<TemperatureRecord>> loadRecords() async {
     final prefs = await SharedPreferences.getInstance();
     final recordsJson = prefs.getStringList(_recordsKey) ?? [];
     
@@ -15,8 +15,8 @@ class StorageService {
         .toList();
   }
 
-  // 新しい体温記録を追加
-  Future<void> addRecord(TemperatureRecord record) async {
+  /// 新しい体温記録を追加
+  Future<void> saveRecord(TemperatureRecord record) async {
     final prefs = await SharedPreferences.getInstance();
     final recordsJson = prefs.getStringList(_recordsKey) ?? [];
     
@@ -24,7 +24,7 @@ class StorageService {
     await prefs.setStringList(_recordsKey, recordsJson);
   }
 
-  // 全ての体温記録を保存
+  /// 全ての体温記録を保存
   Future<void> saveRecords(List<TemperatureRecord> records) async {
     final prefs = await SharedPreferences.getInstance();
     final recordsJson = records

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/temperature_record.dart';
 import '../services/storage_service.dart';
 import '../widgets/temperature_input.dart';
-import '../widgets/temperature_chart.dart';
+import '../widgets/temperature_show.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      final records = await _storageService.getRecords();
+      final records = await _storageService.loadRecords();
       setState(() {
         _records = records;
         _isLoading = false;
@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _addRecord(TemperatureRecord record) async {
     try {
-      await _storageService.addRecord(record);
+      await _storageService.saveRecord(record);
       await _loadRecords();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -69,23 +69,22 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TemperatureInput(onSubmit: _addRecord),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: TemperatureChart(records: _records),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
+      appBar: AppBar(
+        title: const Text('体温記録'),
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                // 体温入力フォーム
+                TemperatureInput(onSubmit: _addRecord),
+                const SizedBox(height: 16),
+                // 体温記録の表示
+                Expanded(
+                  child: TemperatureShow(records: _records),
+                ),
+              ],
+            ),
     );
   }
 }
