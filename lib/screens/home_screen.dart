@@ -101,7 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 // 体温入力フォーム
                 TemperatureInput(onSubmit: _addRecord),
-                const SizedBox(height: 16),
                 // 体温記録の表示
                 Expanded(
                   child: TemperatureShow(
