@@ -14,8 +14,17 @@ class TemperatureChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (records.isEmpty) {
-      return const Center(
-        child: Text('記録がありません。体温を記録してください。'),
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(
+          child: Text(
+            '記録がありません',
+            style: TextStyle(
+              color: Colors.black54,
+              fontSize: 14,
+            ),
+          ),
+        ),
       );
     }
 
@@ -24,41 +33,48 @@ class TemperatureChart extends StatelessWidget {
       ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '体温の推移',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
           SizedBox(
-            height: 300,
+            height: 280,
             child: LineChart(
               LineChartData(
-                gridData: const FlGridData(
+                gridData: FlGridData(
                   show: true,
                   drawVerticalLine: true,
                   horizontalInterval: 0.5,
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(
+                      color: Colors.grey.withOpacity(0.3),
+                      strokeWidth: 1,
+                    );
+                  },
+                  getDrawingVerticalLine: (value) {
+                    return FlLine(
+                      color: Colors.grey.withOpacity(0.2),
+                      strokeWidth: 1,
+                    );
+                  },
                 ),
                 titlesData: FlTitlesData(
                   show: true,
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 30,
+                      reservedSize: 24,
                       getTitlesWidget: (value, meta) {
                         if (value.toInt() >= 0 && value.toInt() < sortedRecords.length) {
                           final date = sortedRecords[value.toInt()].dateTime;
                           return Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
+                            padding: const EdgeInsets.only(top: 5.0),
                             child: Text(
                               DateFormat('MM/dd').format(date),
-                              style: const TextStyle(fontSize: 10),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.black54,
+                              ),
                             ),
                           );
                         }
@@ -69,13 +85,17 @@ class TemperatureChart extends StatelessWidget {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 40,
+                      reservedSize: 30,
                       getTitlesWidget: (value, meta) {
                         return Text(
                           value.toString(),
-                          style: const TextStyle(fontSize: 10),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.black54,
+                          ),
                         );
                       },
+                      interval: 1.0,
                     ),
                   ),
                   rightTitles: const AxisTitles(
@@ -87,7 +107,7 @@ class TemperatureChart extends StatelessWidget {
                 ),
                 borderData: FlBorderData(
                   show: true,
-                  border: Border.all(color: const Color(0xff37434d)),
+                  border: Border.all(color: Colors.grey.withOpacity(0.3)),
                 ),
                 minX: 0,
                 maxX: sortedRecords.length - 1.0,
@@ -103,11 +123,24 @@ class TemperatureChart extends StatelessWidget {
                       ),
                     ),
                     isCurved: true,
-                    color: Colors.blue,
-                    barWidth: 3,
+                    color: Theme.of(context).primaryColor,
+                    barWidth: 2.5,
                     isStrokeCapRound: true,
-                    dotData: const FlDotData(show: true),
-                    belowBarData: BarAreaData(show: false),
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 3.5,
+                          color: Theme.of(context).primaryColor,
+                          strokeWidth: 1,
+                          strokeColor: Colors.white,
+                        );
+                      },
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    ),
                   ),
                 ],
               ),

@@ -51,7 +51,10 @@ class _HomeScreenState extends State<HomeScreen> {
       await _loadRecords();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('体温を記録しました')),
+          const SnackBar(
+            content: Text('体温を記録しました'),
+            duration: Duration(seconds: 1),
+          ),
         );
       }
     } catch (e) {
@@ -66,20 +69,23 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('体温記録'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  TemperatureInput(onSubmit: _addRecord),
-                  TemperatureChart(records: _records),
-                ],
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TemperatureInput(onSubmit: _addRecord),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: TemperatureChart(records: _records),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }

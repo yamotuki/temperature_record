@@ -16,8 +16,8 @@ class TemperatureInput extends StatefulWidget {
 
 class _TemperatureInputState extends State<TemperatureInput> {
   final _temperatureController = TextEditingController(text: '36.8');
-  DateTime _selectedDate = DateTime.now();
-  TimeOfDay _selectedTime = TimeOfDay.now();
+  DateTime _selectedDateTime = DateTime.now();
+  int _selectedHour = DateTime.now().hour;
 
   @override
   void dispose() {
@@ -28,27 +28,34 @@ class _TemperatureInputState extends State<TemperatureInput> {
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate,
+      initialDate: _selectedDateTime,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
     );
-    if (picked != null && picked != _selectedDate) {
+    if (picked != null) {
       setState(() {
-        _selectedDate = picked;
+        _selectedDateTime = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          _selectedHour,
+          0,
+        );
       });
     }
   }
 
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _selectedTime,
-    );
-    if (picked != null && picked != _selectedTime) {
-      setState(() {
-        _selectedTime = picked;
-      });
-    }
+  void _updateHour(int hour) {
+    setState(() {
+      _selectedHour = hour;
+      _selectedDateTime = DateTime(
+        _selectedDateTime.year,
+        _selectedDateTime.month,
+        _selectedDateTime.day,
+        hour,
+        0,
+      );
+    });
   }
 
   void _submit() {
@@ -60,95 +67,97 @@ class _TemperatureInputState extends State<TemperatureInput> {
       return;
     }
 
-    final now = DateTime.now();
-    final dateTime = DateTime(
-      _selectedDate.year,
-      _selectedDate.month,
-      _selectedDate.day,
-      _selectedTime.hour,
-      _selectedTime.minute,
-    );
-
     widget.onSubmit(TemperatureRecord(
-      dateTime: dateTime,
+      dateTime: _selectedDateTime,
       temperature: temperature,
     ));
 
     // 入力をリセット
     _temperatureController.text = '36.8';
     setState(() {
-      _selectedDate = now;
-      _selectedTime = TimeOfDay.fromDateTime(now);
+      _selectedDateTime = DateTime.now();
+      _selectedHour = DateTime.now().hour;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('yyyy/MM/dd');
-    final timeFormat = DateFormat('HH:mm');
-    final now = DateTime.now();
-    final dateTimeNow = DateTime(
-      _selectedDate.year,
-      _selectedDate.month,
-      _selectedDate.day,
-      _selectedTime.hour,
-      _selectedTime.minute,
-    );
 
     return Card(
-      margin: const EdgeInsets.all(16.0),
+      margin: const EdgeInsets.all(12.0),
+      elevation: 0.5,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '体温を記録',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _temperatureController,
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: const InputDecoration(
                       labelText: '体温 (°C)',
                       border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
+                    style: const TextStyle(fontSize: 16),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: TextButton.icon(
                     onPressed: () => _selectDate(context),
-                    icon: const Icon(Icons.calendar_today),
-                    label: Text(dateFormat.format(_selectedDate)),
+                    icon: const Icon(Icons.calendar_today, size: 18),
+                    label: Text(
+                      dateFormat.format(_selectedDateTime),
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      alignment: Alignment.centerLeft,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
                 Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _selectTime(context),
-                    icon: const Icon(Icons.access_time),
-                    label: Text(timeFormat.format(dateTimeNow)),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.access_time, size: 18, color: Colors.blue),
+                      const SizedBox(width: 8),
+                      DropdownButton<int>(
+                        value: _selectedHour,
+                        items: List.generate(24, (index) => index + 1)
+                            .map((hour) => DropdownMenuItem<int>(
+                                  value: hour,
+                                  child: Text('$hour時'),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            _updateHour(value);
+                          }
+                        },
+                        underline: Container(),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _submit,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
                 child: const Text('記録する'),
               ),
             ),
