@@ -25,9 +25,9 @@ class DateSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 年のリスト（現在の年から前後5年）
+    // 年のリスト（現在の年から前5年）
     final int currentYear = DateTime.now().year;
-    final List<int> years = List.generate(11, (index) => currentYear - 5 + index);
+    final List<int> years = List.generate(6, (index) => currentYear - 5 + index);
     
     // 月のリスト（1〜12月）
     final List<int> months = List.generate(12, (index) => index + 1);
