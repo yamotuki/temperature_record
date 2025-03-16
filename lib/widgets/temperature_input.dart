@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../models/temperature_record.dart';
+import 'date_selector.dart';
 
 class TemperatureInput extends StatefulWidget {
   final Function(TemperatureRecord) onSubmit;
@@ -17,7 +17,11 @@ class TemperatureInput extends StatefulWidget {
 class _TemperatureInputState extends State<TemperatureInput> {
   double _selectedTemperature = 36.8;
   final List<double> _temperatureList = [];
-  DateTime _selectedDateTime = DateTime.now();
+  
+  // 日付と時間の状態変数
+  int _selectedYear = DateTime.now().year;
+  int _selectedMonth = DateTime.now().month;
+  int _selectedDay = DateTime.now().day;
   int _selectedHour = DateTime.now().hour;
   int _selectedMinute = DateTime.now().minute;
 
@@ -33,55 +37,56 @@ class _TemperatureInputState extends State<TemperatureInput> {
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDateTime,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDateTime = DateTime(
-          picked.year,
-          picked.month,
-          picked.day,
-          _selectedHour,
-          _selectedMinute,
-        );
-      });
-    }
+  // 年を更新
+  void _updateYear(int year) {
+    setState(() {
+      _selectedYear = year;
+    });
+  }
+
+  // 月を更新
+  void _updateMonth(int month) {
+    setState(() {
+      _selectedMonth = month;
+      // 月が変わると日数も変わるので、選択中の日が新しい月の日数を超える場合は調整
+      final int daysInMonth = DateTime(_selectedYear, month + 1, 0).day;
+      if (_selectedDay > daysInMonth) {
+        _selectedDay = daysInMonth;
+      }
+    });
+  }
+
+  // 日を更新
+  void _updateDay(int day) {
+    setState(() {
+      _selectedDay = day;
+    });
   }
 
   void _updateHour(int hour) {
     setState(() {
       _selectedHour = hour;
-      _selectedDateTime = DateTime(
-        _selectedDateTime.year,
-        _selectedDateTime.month,
-        _selectedDateTime.day,
-        hour,
-        _selectedMinute,
-      );
     });
   }
 
   void _updateMinute(int minute) {
     setState(() {
       _selectedMinute = minute;
-      _selectedDateTime = DateTime(
-        _selectedDateTime.year,
-        _selectedDateTime.month,
-        _selectedDateTime.day,
-        _selectedHour,
-        minute,
-      );
     });
   }
 
   void _submit() {
+    // 選択された日時からDateTimeオブジェクトを作成
+    final DateTime selectedDateTime = DateTime(
+      _selectedYear,
+      _selectedMonth,
+      _selectedDay,
+      _selectedHour,
+      _selectedMinute,
+    );
+    
     widget.onSubmit(TemperatureRecord(
-      dateTime: _selectedDateTime,
+      dateTime: selectedDateTime,
       temperature: _selectedTemperature,
     ));
 
@@ -90,8 +95,6 @@ class _TemperatureInputState extends State<TemperatureInput> {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('yyyy/MM/dd');
-
     return Card(
       margin: const EdgeInsets.all(12.0),
       elevation: 0.5,
@@ -121,65 +124,58 @@ class _TemperatureInputState extends State<TemperatureInput> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
+            // 日付選択
+            DateSelector(
+              selectedYear: _selectedYear,
+              selectedMonth: _selectedMonth,
+              selectedDay: _selectedDay,
+              onYearChanged: _updateYear,
+              onMonthChanged: _updateMonth,
+              onDayChanged: _updateDay,
+            ),
+            const SizedBox(height: 8),
+            
+            // 時間選択
             Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: () => _selectDate(context),
-                    icon: const Icon(Icons.calendar_today, size: 18),
-                    label: Text(
-                      dateFormat.format(_selectedDateTime),
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      alignment: Alignment.centerLeft,
-                    ),
-                  ),
+                DropdownButton<int>(
+                  value: _selectedHour,
+                  items: List.generate(24, (index) => index)
+                      .map((hour) => DropdownMenuItem<int>(
+                            value: hour,
+                            child: Text('$hour時'),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      _updateHour(value);
+                    }
+                  },
+                  underline: Container(),
+                  isDense: true,
                 ),
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.access_time, size: 18, color: Colors.blue),
-                      const SizedBox(width: 8),
-                      DropdownButton<int>(
-                        value: _selectedHour,
-                        items: List.generate(24, (index) => index)
-                            .map((hour) => DropdownMenuItem<int>(
-                                  value: hour,
-                                  child: Text('$hour時'),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            _updateHour(value);
-                          }
-                        },
-                        underline: Container(),
-                      ),
-                      const SizedBox(width: 8),
-                      DropdownButton<int>(
-                        value: _selectedMinute,
-                        items: List.generate(60, (index) => index)
-                            .map((minute) => DropdownMenuItem<int>(
-                                  value: minute,
-                                  child: Text('$minute分'),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            _updateMinute(value);
-                          }
-                        },
-                        underline: Container(),
-                      ),
-                    ],
-                  ),
+                const SizedBox(width: 4),
+                DropdownButton<int>(
+                  value: _selectedMinute,
+                  items: List.generate(60, (index) => index)
+                      .map((minute) => DropdownMenuItem<int>(
+                            value: minute,
+                            child: Text('$minute分'),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      _updateMinute(value);
+                    }
+                  },
+                  underline: Container(),
+                  isDense: true,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
