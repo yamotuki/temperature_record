@@ -96,7 +96,7 @@ class _TemperatureInputState extends State<TemperatureInput> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.all(12.0),
+      margin: const EdgeInsets.all(6.0),
       elevation: 0.5,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
