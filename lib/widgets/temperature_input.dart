@@ -15,15 +15,22 @@ class TemperatureInput extends StatefulWidget {
 }
 
 class _TemperatureInputState extends State<TemperatureInput> {
-  final _temperatureController = TextEditingController(text: '36.8');
+  double _selectedTemperature = 36.8;
+  final List<double> _temperatureList = [];
   DateTime _selectedDateTime = DateTime.now();
   int _selectedHour = DateTime.now().hour;
   int _selectedMinute = DateTime.now().minute;
 
   @override
-  void dispose() {
-    _temperatureController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _generateTemperatureList();
+  }
+
+  void _generateTemperatureList() {
+    for (double i = 35.0; i <= 41.0; i += 0.1) {
+      _temperatureList.add(double.parse(i.toStringAsFixed(1)));
+    }
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -73,17 +80,9 @@ class _TemperatureInputState extends State<TemperatureInput> {
   }
 
   void _submit() {
-    final temperature = double.tryParse(_temperatureController.text);
-    if (temperature == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('有効な体温を入力してください')),
-      );
-      return;
-    }
-
     widget.onSubmit(TemperatureRecord(
       dateTime: _selectedDateTime,
-      temperature: temperature,
+      temperature: _selectedTemperature,
     ));
 
     // 入力値はリセットせず、保持したままにする
@@ -103,17 +102,22 @@ class _TemperatureInputState extends State<TemperatureInput> {
           children: [
             Row(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _temperatureController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: '体温 (°C)',
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    ),
-                    style: const TextStyle(fontSize: 16),
-                  ),
+                const Text('体温: ', style: TextStyle(fontSize: 16)),
+                DropdownButton<double>(
+                  value: _selectedTemperature,
+                  items: _temperatureList.map<DropdownMenuItem<double>>((double value) {
+                    return DropdownMenuItem<double>(
+                      value: value,
+                      child: Text('${value.toStringAsFixed(1)} °C'),
+                    );
+                  }).toList(),
+                  onChanged: (double? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedTemperature = newValue;
+                      });
+                    }
+                  },
                 ),
               ],
             ),
