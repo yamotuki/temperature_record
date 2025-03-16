@@ -86,14 +86,7 @@ class _TemperatureInputState extends State<TemperatureInput> {
       temperature: temperature,
     ));
 
-    // 入力をリセット
-    _temperatureController.text = '36.8';
-    final now = DateTime.now();
-    setState(() {
-      _selectedDateTime = now;
-      _selectedHour = now.hour;
-      _selectedMinute = now.minute;
-    });
+    // 入力値はリセットせず、保持したままにする
   }
 
   @override
