@@ -94,7 +94,10 @@ class TemperatureShow extends StatelessWidget {
                       ),
                       // 削除ボタン
                       IconButton(
-                        icon: const Icon(Icons.close, color: Colors.red),
+                        icon: Icon(
+                          Icons.close,
+                          color: Colors.red.withOpacity(0.5),
+                        ),
                         onPressed: () {
                           // 削除確認ダイアログを表示
                           showDialog(

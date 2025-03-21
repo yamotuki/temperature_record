@@ -147,11 +147,17 @@ class _TemperatureInputState extends State<TemperatureInput> {
                     widget.onSubmit(record);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    backgroundColor: Colors.red.withOpacity(0.7),
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     minimumSize: const Size(40, 36),
                   ),
-                  child: const Icon(Icons.add, size: 20),
+                  child: const Text(
+                    '追加',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  )
                 ),
               ),
             ],
