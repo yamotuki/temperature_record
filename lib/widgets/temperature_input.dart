@@ -4,10 +4,14 @@ import 'date_selector.dart';
 
 class TemperatureInput extends StatefulWidget {
   final Function(TemperatureRecord) onSubmit;
+  final bool isDateTimeExpanded;
+  final VoidCallback onDateTimeExpandToggle;
 
   const TemperatureInput({
     super.key,
     required this.onSubmit,
+    required this.isDateTimeExpanded,
+    required this.onDateTimeExpandToggle,
   });
 
   @override
@@ -95,19 +99,18 @@ class _TemperatureInputState extends State<TemperatureInput> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(6.0),
-      elevation: 0.5,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Text('体温: ', style: TextStyle(fontSize: 16)),
-                DropdownButton<double>(
+    return Column(
+      children: [
+        // 体温選択部分（常に表示）
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+          child: Row(
+            children: [
+              // 体温選択ドロップダウン
+              Expanded(
+                child: DropdownButton<double>(
                   value: _selectedTemperature,
+                  isExpanded: true,
                   items: _temperatureList.map<DropdownMenuItem<double>>((double value) {
                     return DropdownMenuItem<double>(
                       value: value,
@@ -122,72 +125,133 @@ class _TemperatureInputState extends State<TemperatureInput> {
                     }
                   },
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // 日付選択
-            DateSelector(
-              selectedYear: _selectedYear,
-              selectedMonth: _selectedMonth,
-              selectedDay: _selectedDay,
-              onYearChanged: _updateYear,
-              onMonthChanged: _updateMonth,
-              onDayChanged: _updateDay,
-            ),
-            const SizedBox(height: 8),
-            
-            // 時間選択
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                DropdownButton<int>(
-                  value: _selectedHour,
-                  items: List.generate(24, (index) => index)
-                      .map((hour) => DropdownMenuItem<int>(
-                            value: hour,
-                            child: Text('$hour時'),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      _updateHour(value);
-                    }
-                  },
-                  underline: Container(),
-                  isDense: true,
-                ),
-                const SizedBox(width: 4),
-                DropdownButton<int>(
-                  value: _selectedMinute,
-                  items: List.generate(60, (index) => index)
-                      .map((minute) => DropdownMenuItem<int>(
-                            value: minute,
-                            child: Text('$minute分'),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      _updateMinute(value);
-                    }
-                  },
-                  underline: Container(),
-                  isDense: true,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _submit,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text('記録する'),
               ),
-            ),
-          ],
+              
+              // 記録ボタン
+              const SizedBox(width: 8),
+              SizedBox(
+                height: 36,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final DateTime now = DateTime.now();
+                    final TemperatureRecord record = TemperatureRecord(
+                      dateTime: DateTime(
+                        widget.isDateTimeExpanded ? _selectedYear : now.year,
+                        widget.isDateTimeExpanded ? _selectedMonth : now.month,
+                        widget.isDateTimeExpanded ? _selectedDay : now.day,
+                        widget.isDateTimeExpanded ? _selectedHour : now.hour,
+                        widget.isDateTimeExpanded ? _selectedMinute : now.minute,
+                      ),
+                      temperature: _selectedTemperature,
+                    );
+                    widget.onSubmit(record);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    minimumSize: const Size(40, 36),
+                  ),
+                  child: const Icon(Icons.add, size: 20),
+                ),
+              ),
+            ],
+          ),
         ),
+        
+        // 日時選択部分の開閉ボタン
+        InkWell(
+          onTap: widget.onDateTimeExpandToggle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  widget.isDateTimeExpanded
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+        
+        // 展開時に表示される日時選択部分
+        AnimatedCrossFade(
+          firstChild: const SizedBox(
+            width: double.infinity,
+            height: 0,
+          ),
+          secondChild: _buildDateTimeSelector(),
+          crossFadeState: widget.isDateTimeExpanded
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 300),
+        ),
+      ],
+    );
+  }
+  
+  // 日時選択部分のUIを構築
+  Widget _buildDateTimeSelector() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 日付選択
+          DateSelector(
+            selectedYear: _selectedYear,
+            selectedMonth: _selectedMonth,
+            selectedDay: _selectedDay,
+            onYearChanged: _updateYear,
+            onMonthChanged: _updateMonth,
+            onDayChanged: _updateDay,
+          ),
+          
+          const SizedBox(height: 8),
+          
+          // 時間選択
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              DropdownButton<int>(
+                value: _selectedHour,
+                items: List.generate(24, (index) => index)
+                    .map((hour) => DropdownMenuItem<int>(
+                          value: hour,
+                          child: Text('$hour時'),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    _updateHour(value);
+                  }
+                },
+                underline: Container(),
+                isDense: true,
+              ),
+              const SizedBox(width: 4),
+              DropdownButton<int>(
+                value: _selectedMinute,
+                items: List.generate(60, (index) => index)
+                    .map((minute) => DropdownMenuItem<int>(
+                          value: minute,
+                          child: Text('$minute分'),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    _updateMinute(value);
+                  }
+                },
+                underline: Container(),
+                isDense: true,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

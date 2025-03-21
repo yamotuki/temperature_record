@@ -3,6 +3,7 @@ import '../models/temperature_record.dart';
 import '../services/storage_service.dart';
 import '../widgets/temperature_input.dart';
 import '../widgets/temperature_show.dart';
+import 'package:flutter/services.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,6 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final StorageService _storageService = StorageService();
   List<TemperatureRecord> _records = [];
   bool _isLoading = true;
+  bool _isInputExpanded = false;
 
   @override
   void initState() {
@@ -99,8 +101,21 @@ class _HomeScreenState extends State<HomeScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // 体温入力フォーム
-                TemperatureInput(onSubmit: _addRecord),
+                // 体温入力部分
+                Card(
+                  margin: const EdgeInsets.all(4.0),
+                  child: TemperatureInput(
+                    onSubmit: _addRecord,
+                    isDateTimeExpanded: _isInputExpanded,
+                    onDateTimeExpandToggle: () {
+                      setState(() {
+                        _isInputExpanded = !_isInputExpanded;
+                      });
+                      // 触覚フィードバック
+                      HapticFeedback.lightImpact();
+                    },
+                  ),
+                ),
                 // 体温記録の表示
                 Expanded(
                   child: TemperatureShow(
