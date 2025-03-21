@@ -236,7 +236,6 @@ class _TemperatureInputState extends State<TemperatureInput> {
                   }
                 },
                 underline: Container(),
-                isDense: true,
               ),
               const SizedBox(width: 4),
               DropdownButton<int>(
@@ -253,7 +252,6 @@ class _TemperatureInputState extends State<TemperatureInput> {
                   }
                 },
                 underline: Container(),
-                isDense: true,
               ),
             ],
           ),

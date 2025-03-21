@@ -53,7 +53,6 @@ class DateSelector extends StatelessWidget {
               onYearChanged(newValue);
             }
           },
-          isDense: true,
           underline: Container(),
         ),
         
@@ -73,7 +72,6 @@ class DateSelector extends StatelessWidget {
               onMonthChanged(newValue);
             }
           },
-          isDense: true,
           underline: Container(),
         ),
         
@@ -93,7 +91,6 @@ class DateSelector extends StatelessWidget {
               onDayChanged(newValue);
             }
           },
-          isDense: true,
           underline: Container(),
         ),
       ],
